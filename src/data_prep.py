@@ -19,7 +19,25 @@ SAMPLE_SIZE= 10000
 
 def run_data_prep():
     """
+    This function extracts and transforms raw Kaggle transaction data into 
+    usable targets for both the time-series XGBoost model and the MobileNetV2 
+    CNN without unzipping the entire 30GB master archive to disk.
 
+    Process:
+        1. Reads `transactions_train.csv` directly from the master ZIP into memory.
+        2. Aggregates monthly transaction volumes to create a time-series demand target.
+        3. Aggregates total transaction volumes, applies a log transformation (`np.log1p`), 
+           and MinMax scales the results (0-1) to create a continuous proxy label for the CNN.
+        4. Randomly samples 10,000 unique `article_id`s.
+        5. Extracts only the corresponding 10,000 images from the ZIP to a local directory.
+
+    Outputs (Written to disk):
+        - `/data/processed/time_series_targets.csv`: Tabular demand data.
+        - `/data/processed/cnn_proxy_targets_10k.csv`: Scaled CNN target data.
+        - `/data/images_10k/`: Directory containing the extracted 10,000 JPEG images.
+
+    Returns:
+        None
     """
     
     # Ensure the data directories exists:
