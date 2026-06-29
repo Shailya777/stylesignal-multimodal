@@ -4,7 +4,16 @@
 # Repo Structure:
 Primary_repo_Strucutre.txt
 
-# Data;
-data/raw/
-data/images_10k
+# Ignore local data directories and files
+data/
+*.csv
+*.zip
+.vscode/
+
+# Ignore image caches and Jupyter metadata
+*.jpg
+*.jpeg
+*.png
+.ipynb_checkpoints/
+__pycache__/
 trendsight_xai_repo_structure.txt:Zone.Identifier
