@@ -50,6 +50,42 @@ def load_and_preprocess_data():
 
     return df
 
+# Building TensorFlow Data Pipeline:
+def build_tf_dataset(df, is_training= True):
+    """
+    Builds an optimized tf.data.Dataset for training or inference.
+
+    Args:
+        df (pd.DataFrame): Dataframe containing 'file_path' and 'cnn_target_scaled'.
+        is_training (bool): If True, shuffles the dataset for training. 
+                            If False, keeps order for inference mapping.
+
+    Returns:
+        tf.data.Dataset: A batched and prefeched TensorFlow dataset ready for model input.
+    """
+
+    paths= df['file_path'].values
+    targets= df['cnn_target_scaled'].values
+
+    # parsing and Decoding the images:
+    def process_image(file_path, label):
+        img= tf.io.read_file(file_path)
+        img= tf.image.decode_jpeg(img, channels= 3)
+        img= tf.image.resize(img, IMG_SIZE)
+        img= tf.keras.applications.mobilenet_v2.preprocess_input(img) # MobileNetV2 expects inputs scaled between -1 and 1
+        return img, label
+    
+    ds= tf.data.Dataset.from_tensor_slices((paths, targets))
+    ds= ds.map(process_image, num_parallel_calls= tf.data.AUTOTUNE)
+
+    if is_training:
+        ds= ds.shuffle(buffer_size= 1000)
+    
+    ds= ds.batch(BATCH_SIZE).prefetch(buffer_size= tf.data.AUTOTUNE)
+    return ds
+
+
+
 if __name__== "__main__":
     # Load and preprocess the data:
     df= load_and_preprocess_data()
